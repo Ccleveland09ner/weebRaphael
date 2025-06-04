@@ -11,5 +11,11 @@
     "dev:backend": "cd backend && python -m uvicorn main:app --reload",
     "build": "cd frontend && npm run build",
     "start": "cd frontend && npm run preview"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^3.19.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "framer-motion": "^12.16.0"
   }
 }
