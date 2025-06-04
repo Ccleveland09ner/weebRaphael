@@ -1,4 +1,4 @@
-import { Box, Container, Heading, VStack, FormControl, FormLabel, Input, Button, Text, Link, Flex, useColorModeValue } from '@chakra-ui/react';
+import { Box, Container, Heading, VStack, FormControl, FormLabel, Input, Button, Text, Link, Flex, useColorModeValue, Select } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { auth } from '../services/api';
@@ -9,7 +9,8 @@ export default function Register() {
     email: '',
     age: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'user' // Default role
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -56,7 +57,8 @@ export default function Register() {
     try {
       await auth.register({
         ...formData,
-        age: parseInt(formData.age)
+        age: parseInt(formData.age),
+        is_admin: formData.role === 'admin'
       });
       navigate('/login');
     } catch (err) {
@@ -66,7 +68,7 @@ export default function Register() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
     if (name === 'age') {
@@ -230,6 +232,28 @@ export default function Register() {
                         bg: 'gray.100',
                       }}
                     />
+                  </FormControl>
+
+                  <FormControl isRequired>
+                    <FormLabel>Role</FormLabel>
+                    <Select
+                      name="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                      bg="gray.50"
+                      border="2px solid"
+                      borderColor="transparent"
+                      _focus={{
+                        bg: 'white',
+                        borderColor: 'brand.500',
+                      }}
+                      _hover={{
+                        bg: 'gray.100',
+                      }}
+                    >
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                    </Select>
                   </FormControl>
 
                   <FormControl isRequired>
