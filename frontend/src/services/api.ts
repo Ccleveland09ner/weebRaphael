@@ -85,8 +85,8 @@ export const anime = {
     const response = await api.post('/anime/watched', animeData);
     return response.data;
   },
-  getRecommendations: async () => {
-    const response = await api.get('/anime/recommendations');
+  getRecommendations: async (query?: string) => {
+    const response = await api.get(`/anime/recommendations${query ? `?query=${query}` : ''}`);
     return response.data;
   },
   getStats: async () => {
@@ -106,4 +106,6 @@ export const admin = {
   },
 };
 
-export default api; 
+export default api;
+
+export { anime }
