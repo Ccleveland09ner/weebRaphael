@@ -15,7 +15,7 @@ from user_db import (
     create_user, get_user_by_email, update_user,
     delete_user, search_users, get_user_stats,
     update_last_login, increment_failed_login_attempts,
-    reset_failed_login_attempts
+    reset_failed_login_attempts, init_db
 )
 from anime_db import AnimeDatabase
 from auth import (
@@ -55,6 +55,10 @@ app.add_middleware(
     allow_methods=settings.CORS_METHODS,
     allow_headers=settings.CORS_HEADERS,
 )
+
+@app.on_event("startup")
+def startup():
+    init_db()
 
 # Rate limiting middleware
 @app.middleware("http")

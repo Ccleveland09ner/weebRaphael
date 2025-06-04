@@ -6,6 +6,7 @@ import schemas
 import sqlite3
 from exceptions import UserNotFoundError, DuplicateEntryError, DatabaseError
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -58,14 +59,17 @@ def create_user(user: schemas.UserCreate) -> schemas.User:
         conn.commit()
 
         cursor.execute('SELECT * FROM users WHERE email = ?', (user.email,))
-        user_data = cursor.fetchone()
+        row = cursor.fetchone()
+        user_data = dict(row)
 
         return schemas.User(
             id=user_data['id'],
             name=user_data['name'],
             email=user_data['email'],
             age=user_data['age'],
-            password=user_data['password']
+            password=user_data['password'],
+            created_at= user_data.get("created_at", datetime.utcnow()), 
+            updated_at=user_data.get("updated_at", datetime.utcnow()) 
         )
     except sqlite3.IntegrityError as e:
         conn.rollback()
