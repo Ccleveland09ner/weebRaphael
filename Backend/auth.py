@@ -4,11 +4,9 @@ from passlib.context import CryptContext
 from config import settings
 from schemas import TokenData, User
 from typing import Optional
-import json
-import os
 import jwt
 import datetime
-import user_db
+from user_db import get_user_by_email
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -48,7 +46,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     except jwt.PyJWTError:
         raise credentials_exception
     
-    user = user_db.get_user_by_email(token_data.username)
+    user = get_user_by_email(token_data.username)
     if user is None:
         raise credentials_exception
     return user
@@ -77,17 +75,3 @@ def verify_refresh_token(token: str) -> dict:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token"
         )
-    
-def authenticate_user(username: str, password: str, secret_key: str) -> User:
-    try:
-        with open('user_db.json', 'r') as file:
-            user_db = json.load(file)
-    except json.JSONDecodeError:
-        user_db = {}
-    
-    if username in user_db:
-        user = user_db[username]
-        if verify_password(password, user['hashed_password']):
-            return User(id=user['id'], name=user['name'], email=user['email'], age=user['age'], password=user['hashed_password'])
-    
-    raise ValueError("Invalid credentials")

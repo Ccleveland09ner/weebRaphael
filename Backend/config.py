@@ -25,15 +25,11 @@ class Settings(BaseSettings):
     DB_POOL_SIZE: int = 5
     DB_MAX_OVERFLOW: int = 10
     
-    # Redis Configuration
-    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")
-    
     # CORS
     CORS_ORIGINS: List[str] = [
         "http://localhost:5173",  # Vite dev server
         "http://localhost:3000",  # React dev server
         "https://*.netlify.app",  # Netlify domains
-        "https://weebraphael.netlify.app",  # Your specific Netlify domain
     ]
     CORS_METHODS: List[str] = ["*"]
     CORS_HEADERS: List[str] = ["*"]
@@ -73,4 +69,4 @@ settings = Settings()
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
     format=settings.LOG_FORMAT
-) 
+)
