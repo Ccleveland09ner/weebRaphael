@@ -8,6 +8,7 @@ class UserBase(BaseModel):
     name: str = Field(..., description="Name of the user")
     email: EmailStr = Field(..., description="Email address of the user")
     age: int = Field(..., ge=0, description="Age of the user, must be a non-negative integer")
+    is_admin: bool = Field(default=False, description="Whether the user is an administrator")
 
 class UserCreate(UserBase):
     password: str = Field(..., description="Password of the user")
@@ -38,7 +39,9 @@ class User(UserBase):
 class UserResponse(UserBase):
     id: int = Field(..., description="Unique identifier for the user")
     created_at: datetime = Field(..., description="User creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
     last_login: Optional[datetime] = Field(None, description="Last login timestamp")
+    is_active: bool = Field(True, description="Whether the user account is active")
 
 class Token(BaseModel):
     access_token: str

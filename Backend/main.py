@@ -21,7 +21,7 @@ from anime_db import AnimeDatabase
 from auth import (
     get_current_user, create_access_token,
     create_refresh_token, verify_refresh_token,
-    hash_password, verify_password
+    hash_password, verify_password, get_current_admin
 )
 from rate_limiter import rate_limiter
 from cache import cache
@@ -173,9 +173,8 @@ async def admin_search_users(
     query: str,
     page: int = 1,
     page_size: int = 10,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: UserResponse = Depends(get_current_admin)
 ):
-    # TODO: Add admin check
     try:
         return search_users(query, page, page_size)
     except Exception as e:
@@ -186,8 +185,7 @@ async def admin_search_users(
         )
 
 @app.get("/admin/stats", response_model=UserStats)
-async def admin_get_stats(current_user: UserResponse = Depends(get_current_user)):
-    # TODO: Add admin check
+async def admin_get_stats(current_user: UserResponse = Depends(get_current_admin)):
     try:
         return get_user_stats()
     except Exception as e:
