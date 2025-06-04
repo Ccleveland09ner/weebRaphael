@@ -7,7 +7,7 @@ export default function Register() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    age: 18,
+    age: '',
     password: '',
     confirmPassword: ''
   });
@@ -25,7 +25,7 @@ export default function Register() {
       return;
     }
 
-    if (formData.age < 13) {
+    if (!formData.age || parseInt(formData.age) < 13) {
       setError('You must be at least 13 years old to register');
       return;
     }
@@ -33,7 +33,10 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      await auth.register(formData);
+      await auth.register({
+        ...formData,
+        age: parseInt(formData.age)
+      });
       navigate('/login');
     } catch (err) {
       setError('Registration failed. Please try again.');
@@ -46,13 +49,6 @@ export default function Register() {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
-    });
-  };
-
-  const handleAgeChange = (value: string) => {
-    setFormData({
-      ...formData,
-      age: parseInt(value) || 18
     });
   };
 
@@ -180,25 +176,24 @@ export default function Register() {
 
                   <FormControl isRequired>
                     <FormLabel>Age</FormLabel>
-                    <NumberInput
-                      min={13}
-                      max={120}
+                    <Input
+                      type="number"
+                      name="age"
                       value={formData.age}
-                      onChange={handleAgeChange}
-                    >
-                      <NumberInputField
-                        bg="gray.50"
-                        border="2px solid"
-                        borderColor="transparent"
-                        _focus={{
-                          bg: 'white',
-                          borderColor: 'brand.500',
-                        }}
-                        _hover={{
-                          bg: 'gray.100',
-                        }}
-                      />
-                    </NumberInput>
+                      onChange={handleChange}
+                      min="13"
+                      max="120"
+                      bg="gray.50"
+                      border="2px solid"
+                      borderColor="transparent"
+                      _focus={{
+                        bg: 'white',
+                        borderColor: 'brand.500',
+                      }}
+                      _hover={{
+                        bg: 'gray.100',
+                      }}
+                    />
                   </FormControl>
 
                   <FormControl isRequired>
