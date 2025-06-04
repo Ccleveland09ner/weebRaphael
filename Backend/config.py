@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     # Site Configuration
     SITE_URL: str = os.getenv("SITE_URL", "http://localhost:8000")
     ANIME_IMAGE_URL: str = os.getenv("ANIME_IMAGE_URL", "https://cdn.myanimelist.net/images/anime")
-    ANILIST_API_URL: str = os.getenv("ANILIST_API_URL", "https://graphql.anilist.co")
+    ANIME_API_URL: str = os.getenv("ANIME_API_URL", "https://graphql.anilist.co")
     
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
