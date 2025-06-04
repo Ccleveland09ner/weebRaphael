@@ -32,6 +32,7 @@ def init_db():
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             last_login TIMESTAMP,
             is_active BOOLEAN DEFAULT 1,
+            is_admin BOOLEAN DEFAULT 0,
             failed_login_attempts INTEGER DEFAULT 0
         )
     ''')
@@ -49,27 +50,31 @@ def create_user(user: schemas.UserCreate) -> schemas.User:
 
     try:
         hashed_password = pwd_context.hash(user.password)
+        now = datetime.utcnow().isoformat()
         cursor.execute(
             '''
-            INSERT INTO users (name, email, age, password, created_at, updated_at)
-            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            INSERT INTO users (name, email, age, password, created_at, updated_at, is_admin)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             ''',
-            (user.name, user.email, user.age, hashed_password)
+            (user.name, user.email, user.age, hashed_password, now, now, user.is_admin)
         )
         conn.commit()
 
         cursor.execute('SELECT * FROM users WHERE email = ?', (user.email,))
         row = cursor.fetchone()
-        user_data = dict(row)
-
+        
         return schemas.User(
-            id=user_data['id'],
-            name=user_data['name'],
-            email=user_data['email'],
-            age=user_data['age'],
-            password=user_data['password'],
-            created_at= user_data.get("created_at", datetime.utcnow()), 
-            updated_at=user_data.get("updated_at", datetime.utcnow()) 
+            id=row['id'],
+            name=row['name'],
+            email=row['email'],
+            age=row['age'],
+            password=row['password'],
+            created_at=datetime.fromisoformat(row['created_at']),
+            updated_at=datetime.fromisoformat(row['updated_at']),
+            last_login=None,
+            is_active=True,
+            is_admin=bool(row['is_admin']),
+            failed_login_attempts=0
         )
     except sqlite3.IntegrityError as e:
         conn.rollback()
@@ -86,15 +91,21 @@ def get_user_by_email(email: str) -> Optional[schemas.User]:
     
     try:
         cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
-        user_data = cursor.fetchone()
+        row = cursor.fetchone()
         
-        if user_data:
+        if row:
             return schemas.User(
-                id=user_data['id'],
-                name=user_data['name'],
-                email=user_data['email'],
-                age=user_data['age'],
-                password=user_data['password']
+                id=row['id'],
+                name=row['name'],
+                email=row['email'],
+                age=row['age'],
+                password=row['password'],
+                created_at=datetime.fromisoformat(row['created_at']),
+                updated_at=datetime.fromisoformat(row['updated_at']),
+                last_login=datetime.fromisoformat(row['last_login']) if row['last_login'] else None,
+                is_active=bool(row['is_active']),
+                is_admin=bool(row['is_admin']),
+                failed_login_attempts=row['failed_login_attempts']
             )
         return None
     except Exception as e:
@@ -107,7 +118,6 @@ def update_user(user_id: int, update_data: schemas.UserUpdate) -> schemas.User:
     cursor = conn.cursor()
     
     try:
-        # Build update query dynamically based on provided fields
         update_fields = []
         params = []
         
@@ -126,7 +136,9 @@ def update_user(user_id: int, update_data: schemas.UserUpdate) -> schemas.User:
         if not update_fields:
             raise ValueError("No fields to update")
         
-        update_fields.append("updated_at = CURRENT_TIMESTAMP")
+        now = datetime.utcnow().isoformat()
+        update_fields.append("updated_at = ?")
+        params.append(now)
         params.append(user_id)
         
         query = f"""
@@ -142,14 +154,20 @@ def update_user(user_id: int, update_data: schemas.UserUpdate) -> schemas.User:
             raise UserNotFoundError(f"User with id {user_id} not found")
         
         cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
-        user_data = cursor.fetchone()
+        row = cursor.fetchone()
         
         return schemas.User(
-            id=user_data['id'],
-            name=user_data['name'],
-            email=user_data['email'],
-            age=user_data['age'],
-            password=user_data['password']
+            id=row['id'],
+            name=row['name'],
+            email=row['email'],
+            age=row['age'],
+            password=row['password'],
+            created_at=datetime.fromisoformat(row['created_at']),
+            updated_at=datetime.fromisoformat(row['updated_at']),
+            last_login=datetime.fromisoformat(row['last_login']) if row['last_login'] else None,
+            is_active=bool(row['is_active']),
+            is_admin=bool(row['is_admin']),
+            failed_login_attempts=row['failed_login_attempts']
         )
     except Exception as e:
         conn.rollback()
@@ -180,7 +198,6 @@ def search_users(
     cursor = conn.cursor()
     
     try:
-        # Count total matching users
         cursor.execute(
             '''
             SELECT COUNT(*) 
@@ -191,7 +208,6 @@ def search_users(
         )
         total = cursor.fetchone()[0]
         
-        # Get paginated results
         offset = (page - 1) * page_size
         cursor.execute(
             '''
@@ -204,16 +220,21 @@ def search_users(
             (f'%{query}%', f'%{query}%', page_size, offset)
         )
         
-        users = [
-            schemas.User(
+        users = []
+        for row in cursor.fetchall():
+            users.append(schemas.User(
                 id=row['id'],
                 name=row['name'],
                 email=row['email'],
                 age=row['age'],
-                password=row['password']
-            )
-            for row in cursor.fetchall()
-        ]
+                password=row['password'],
+                created_at=datetime.fromisoformat(row['created_at']),
+                updated_at=datetime.fromisoformat(row['updated_at']),
+                last_login=datetime.fromisoformat(row['last_login']) if row['last_login'] else None,
+                is_active=bool(row['is_active']),
+                is_admin=bool(row['is_admin']),
+                failed_login_attempts=row['failed_login_attempts']
+            ))
         
         return {
             'users': users,
@@ -232,9 +253,10 @@ def update_last_login(user_id: int) -> None:
     cursor = conn.cursor()
     
     try:
+        now = datetime.utcnow().isoformat()
         cursor.execute(
-            'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
-            (user_id,)
+            'UPDATE users SET last_login = ? WHERE id = ?',
+            (now, user_id)
         )
         conn.commit()
     except Exception as e:

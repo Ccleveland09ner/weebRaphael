@@ -92,10 +92,10 @@ class AnimeRecommendation(BaseModel):
     title: str = Field(..., description="Title of the anime")
     recommended_at: datetime = Field(..., description="When the anime was recommended")
     is_viewed: bool = Field(False, description="Whether the recommendation has been viewed")
+    rating: Optional[float] = Field(None, description="Average rating of the anime")
 
 class AnimeStats(BaseModel):
     favorites_count: int = Field(..., description="Number of favorite animes")
     watched_count: int = Field(..., description="Number of watched animes")
     unviewed_recommendations: int = Field(..., description="Number of unviewed recommendations")
     average_rating: float = Field(..., description="Average rating of watched animes")
-
