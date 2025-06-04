@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Container,
@@ -6,7 +6,10 @@ import {
   Text,
   VStack,
   SimpleGrid,
+  Input,
+  Button,
   useColorModeValue,
+  Flex,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
 import { anime } from '../services/api';
@@ -14,28 +17,35 @@ import { AnimeCard } from '../components/AnimeCard';
 import type { AnimeRecommendation, AnimeStats } from '../types/anime';
 
 export function Home() {
+  const [searchQuery, setSearchQuery] = useState('');
   const bgColor = useColorModeValue('brand.black', 'brand.grey');
 
-  const { data: recommendations, isLoading: isLoadingRecommendations } = useQuery<AnimeRecommendation[]>({
-    queryKey: ['recommendations'],
-    queryFn: () => anime.getRecommendations()
-  });
+  const { data: favorites } = useQuery(['favorites'], () => anime.getFavorites());
+  const { data: watched } = useQuery(['watched'], () => anime.getWatched());
+  const { data: recommendations } = useQuery(['recommendations', searchQuery], 
+    () => searchQuery ? anime.getRecommendations(searchQuery) : null,
+    { enabled: !!searchQuery }
+  );
 
-  const { data: stats, isLoading: isLoadingStats } = useQuery<AnimeStats>({
-    queryKey: ['stats'],
-    queryFn: () => anime.getStats()
-  });
+  const { data: stats } = useQuery(['stats'], () => anime.getStats());
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // The query will automatically trigger due to the useQuery dependency
+  };
 
   return (
     <Box minH="100vh" bg={bgColor} pt={20}>
       <Container maxW="container.xl">
-        <VStack gap={8} align="stretch">
+        <VStack spacing={12} align="stretch">
           {/* Hero Section */}
           <Box
-            h="500px"
-            bgGradient="linear(to-br, brand.blue, brand.grey)"
-            borderRadius="xl"
+            h="70vh"
+            bgImage="url('https://images.pexels.com/photos/7234263/pexels-photo-7234263.jpeg')"
+            bgSize="cover"
+            bgPosition="center"
             position="relative"
+            borderRadius="xl"
             overflow="hidden"
           >
             <Box
@@ -44,30 +54,50 @@ export function Home() {
               left={0}
               right={0}
               bottom={0}
-              bg="rgba(0, 0, 0, 0.5)"
+              bg="rgba(0,0,0,0.7)"
               display="flex"
-              alignItems="center"
+              flexDirection="column"
               justifyContent="center"
+              p={8}
             >
-              <VStack gap={4} textAlign="center" color="white">
-                <Heading size="2xl">Welcome to WeebRaphael</Heading>
-                <Text fontSize="xl">
-                  Your ultimate anime recommendation platform
-                </Text>
-              </VStack>
+              <Heading size="2xl" color="white" mb={4}>
+                Discover Your Next Anime
+              </Heading>
+              <Text fontSize="xl" color="white" mb={8}>
+                Get personalized recommendations based on your interests
+              </Text>
+              <form onSubmit={handleSearch}>
+                <Flex maxW="600px">
+                  <Input
+                    placeholder="Search for anime recommendations..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    size="lg"
+                    bg="white"
+                    color="black"
+                    mr={4}
+                  />
+                  <Button
+                    type="submit"
+                    size="lg"
+                    colorScheme="blue"
+                    px={8}
+                  >
+                    Search
+                  </Button>
+                </Flex>
+              </form>
             </Box>
           </Box>
 
-          {/* Recommendations Section */}
-          <Box>
-            <Heading color="brand.white" mb={6}>
-              Recommended for You
-            </Heading>
-            {isLoadingRecommendations ? (
-              <Text color="brand.white">Loading recommendations...</Text>
-            ) : (
+          {/* Search Results */}
+          {recommendations && recommendations.length > 0 && (
+            <Box>
+              <Heading color="brand.white" mb={6}>
+                Search Results
+              </Heading>
               <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={6}>
-                {recommendations?.map((anime) => (
+                {recommendations.map((anime) => (
                   <AnimeCard
                     key={anime.anime_id}
                     id={anime.anime_id}
@@ -76,14 +106,50 @@ export function Home() {
                   />
                 ))}
               </SimpleGrid>
-            )}
-          </Box>
+            </Box>
+          )}
+
+          {/* Favorites Section */}
+          {favorites && favorites.length > 0 && (
+            <Box>
+              <Heading color="brand.white" mb={6}>
+                Your Favorites
+              </Heading>
+              <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={6}>
+                {favorites.map((anime) => (
+                  <AnimeCard
+                    key={anime.anime_id}
+                    id={anime.anime_id}
+                    title={anime.title}
+                    isFavorite={true}
+                  />
+                ))}
+              </SimpleGrid>
+            </Box>
+          )}
+
+          {/* Watched Section */}
+          {watched && watched.length > 0 && (
+            <Box>
+              <Heading color="brand.white" mb={6}>
+                Continue Watching
+              </Heading>
+              <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={6}>
+                {watched.map((anime) => (
+                  <AnimeCard
+                    key={anime.anime_id}
+                    id={anime.anime_id}
+                    title={anime.title}
+                    rating={anime.rating}
+                    isWatched={true}
+                  />
+                ))}
+              </SimpleGrid>
+            </Box>
+          )}
 
           {/* Stats Section */}
-          <Box>
-            <Heading color="brand.white" mb={6}>
-              Your Anime Journey
-            </Heading>
+          {stats && (
             <SimpleGrid columns={{ base: 1, md: 3 }} gap={6}>
               <Box
                 bg="brand.blue"
@@ -92,7 +158,7 @@ export function Home() {
                 textAlign="center"
               >
                 <Text fontSize="2xl" color="brand.white">
-                  {stats?.favorites_count || 0}
+                  {stats.favorites_count}
                 </Text>
                 <Text color="brand.white">Favorites</Text>
               </Box>
@@ -103,7 +169,7 @@ export function Home() {
                 textAlign="center"
               >
                 <Text fontSize="2xl" color="brand.white">
-                  {stats?.watched_count || 0}
+                  {stats.watched_count}
                 </Text>
                 <Text color="brand.white">Watched</Text>
               </Box>
@@ -114,64 +180,16 @@ export function Home() {
                 textAlign="center"
               >
                 <Text fontSize="2xl" color="brand.white">
-                  {stats?.average_rating?.toFixed(1) || '0.0'}
+                  {stats.average_rating?.toFixed(1) || '0.0'}
                 </Text>
                 <Text color="brand.white">Average Rating</Text>
               </Box>
             </SimpleGrid>
-          </Box>
+          )}
         </VStack>
       </Container>
     </Box>
   );
 }
 
-          {!isLoadingStats && stats && (
-            <Box bg={sectionBgColor} p={6} borderRadius="xl">
-              <Heading size="lg" mb={6} color="brand.white">
-                Your Anime Journey
-              </Heading>
-              <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
-                <Box
-                  bg="brand.blue"
-                  p={6}
-                  borderRadius="lg"
-                  textAlign="center"
-                >
-                  <Text fontSize="2xl" color="brand.white">
-                    {stats.favorites_count}
-                  </Text>
-                  <Text color="brand.white">Favorites</Text>
-                </Box>
-                <Box
-                  bg="brand.blue"
-                  p={6}
-                  borderRadius="lg"
-                  textAlign="center"
-                >
-                  <Text fontSize="2xl" color="brand.white">
-                    {stats.watched_count}
-                  </Text>
-                  <Text color="brand.white">Watched</Text>
-                </Box>
-                <Box
-                  bg="brand.blue"
-                  p={6}
-                  borderRadius="lg"
-                  textAlign="center"
-                >
-                  <Text fontSize="2xl" color="brand.white">
-                    {stats.average_rating.toFixed(1)}
-                  </Text>
-                  <Text color="brand.white">Average Rating</Text>
-                </Box>
-              </SimpleGrid>
-            </Box>
-          )}
-        </VStack>
-      </Container>
-    </Box>
-  );
-};
-
-export default Home; 
+export default Home;
