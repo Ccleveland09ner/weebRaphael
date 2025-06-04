@@ -2,7 +2,9 @@ services:
   - type: web
     name: weebraphael-backend
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      pip install -r requirements.txt
+      python -m alembic upgrade head
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
@@ -23,3 +25,12 @@ services:
         value: https://weebraphael-backend.onrender.com
       - key: ANIME_IMAGE_URL
         value: https://cdn.myanimelist.net/images/anime
+      - key: DATABASE_URL
+        fromDatabase:
+          name: weebraphael-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: weebraphael-redis
+          property: connectionString

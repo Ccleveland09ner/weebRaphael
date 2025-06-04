@@ -5,27 +5,27 @@ from typing import List, Optional
 import logging
 from datetime import datetime
 
-from config import settings
-from schemas import (
+from Backend.config import settings
+from Backend.schemas import (
     UserCreate, UserResponse, Token, UserUpdate,
     UserSearchResponse, UserStats, FavouriteAnime,
     WatchedAnime, AnimeRecommendation, AnimeStats
 )
-from user_db import (
+from Backend.user_db import (
     create_user, get_user_by_email, update_user,
     delete_user, search_users, get_user_stats,
     update_last_login, increment_failed_login_attempts,
     reset_failed_login_attempts
 )
-from anime_db import AnimeDatabase
-from auth import (
+from Backend.anime_db import AnimeDatabase
+from Backend.auth import (
     get_current_user, create_access_token,
     create_refresh_token, verify_refresh_token,
     hash_password, verify_password, get_current_admin
 )
-from rate_limiter import rate_limiter
-from cache import cache
-from exceptions import (
+from Backend.rate_limiter import rate_limiter
+from Backend.cache import cache
+from Backend.exceptions import (
     UserNotFoundError, DuplicateEntryError,
     InvalidCredentialsError, RateLimitExceededError
 )
@@ -288,4 +288,4 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "version": "1.0.0"
-    }
+    } 
