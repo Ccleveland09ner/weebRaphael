@@ -27,6 +27,7 @@ export interface RegisterCredentials extends LoginCredentials {
   name: string;
   age: number;
   confirmPassword: string;
+  is_admin: boolean;
 }
 
 export interface AuthResponse {
