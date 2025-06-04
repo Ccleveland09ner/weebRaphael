@@ -40,20 +40,30 @@ export const auth = {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
-      return data;
+
+      if (data.access_token) {
+        localStorage.setItem('token', data.access_token);
+        return {
+          token: data.access_token,
+          refreshToken: data.refresh_token,
+          user: await auth.getProfile()
+        };
+      }
+      throw new Error('Invalid response format');
     } catch (error) {
       console.error('Login API error:', error);
       throw error;
     }
   },
   
-  register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
+  register: async (credentials: RegisterCredentials): Promise<void> => {
     try {
-      const { data } = await api.post<AuthResponse>('/users', {
+      const { data } = await api.post('/users', {
         name: credentials.name,
         email: credentials.email,
         password: credentials.password,
-        age: 18 // Adding a default age since it's required by the backend
+        age: 18, // Default age since it's required by the backend
+        is_admin: false
       });
       return data;
     } catch (error) {
