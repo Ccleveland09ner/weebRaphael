@@ -8,7 +8,7 @@ import { FiSearch } from 'react-icons/fi';
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   
-  const { data: recommendations } = useQuery({
+  const { data: recommendations = [] } = useQuery({
     queryKey: ['recommendations', searchQuery],
     queryFn: () => animeService.getRecommendations(searchQuery),
     enabled: !!searchQuery
