@@ -3,9 +3,6 @@ from typing import List
 import secrets
 import logging
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 class Settings(BaseSettings):
     # Environment
@@ -13,7 +10,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # Security
-    SECRET_KEY: str = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
+    SECRET_KEY: str = secrets.token_urlsafe(32)
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -49,11 +46,10 @@ class Settings(BaseSettings):
     SITE_URL: str = "http://localhost:8000"
     ANIME_API_URL: str = "https://graphql.anilist.co"
     ANIME_IMAGE_URL: str = "https://cdn.myanimelist.net/images/anime"
-    ANILIST_API_URL: str = "https://graphql.anilist.co"
     
     class Config:
-        env_file = ".env"
-        extra = "allow"  # Allow extra fields
+        env_file = None
+        extra = "allow"
 
 settings = Settings()
 
