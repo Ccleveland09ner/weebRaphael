@@ -1,9 +1,8 @@
 from typing import Optional, List, Dict, Any
 from passlib.context import CryptContext
 from config import settings
-import json
-import schemas
 import sqlite3
+import schemas
 from exceptions import UserNotFoundError, DuplicateEntryError, DatabaseError
 import logging
 from datetime import datetime
@@ -20,6 +19,9 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # Drop existing users table to recreate with correct schema
+    cursor.execute('DROP TABLE IF EXISTS users')
+    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
