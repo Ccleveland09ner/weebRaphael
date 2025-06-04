@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { LoginCredentials, RegisterCredentials, AuthResponse } from '../types/auth';
+import { LoginCredentials, RegisterCredentials, AuthResponse, User } from '../types/auth';
 import { Anime, FavoriteAnime, WatchedAnime, AnimeRecommendation, AnimeStats } from '../types/anime';
 
 const api = axios.create({
@@ -14,14 +14,30 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const auth = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const { data } = await api.post('/auth/login', credentials);
-    return data;
+    try {
+      const { data } = await api.post<AuthResponse>('/auth/login', credentials);
+      return data;
+    } catch (error) {
+      console.error('Login API error:', error);
+      throw error;
+    }
   },
   
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
-    const { data } = await api.post('/auth/register', credentials);
+    const { data } = await api.post<AuthResponse>('/auth/register', credentials);
     return data;
   },
   
@@ -29,13 +45,18 @@ export const auth = {
     localStorage.removeItem('token');
   },
   
-  getProfile: async () => {
-    const { data } = await api.get('/auth/profile');
-    return data;
+  getProfile: async (): Promise<User> => {
+    try {
+      const { data } = await api.get<User>('/auth/profile');
+      return data;
+    } catch (error) {
+      console.error('Get profile API error:', error);
+      throw error;
+    }
   },
   
-  updateProfile: async (updates: Partial<RegisterCredentials>) => {
-    const { data } = await api.put('/auth/profile', updates);
+  updateProfile: async (updates: Partial<RegisterCredentials>): Promise<User> => {
+    const { data } = await api.put<User>('/auth/profile', updates);
     return data;
   }
 };
@@ -71,7 +92,7 @@ export const animeService = {
     const { data } = await api.get('/anime/recommendations', {
       params: { query }
     });
-    return data;
+    return Array.isArray(data) ? data : [];
   },
   
   getStats: async (): Promise<AnimeStats> => {
