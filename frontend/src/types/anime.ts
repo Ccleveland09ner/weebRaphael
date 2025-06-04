@@ -1,3 +1,5 @@
+import { User } from './auth';
+
 export interface Anime {
   id: number;
   title: string;
@@ -5,20 +7,26 @@ export interface Anime {
   coverImage: string;
   rating: number;
   genres: string[];
+  popularity?: number;
+  status?: string;
 }
 
 export interface FavoriteAnime extends Anime {
   addedAt: string;
+  user?: User;
 }
 
 export interface WatchedAnime extends Anime {
   watchedAt: string;
-  userRating: number;
+  userRating?: number;
+  review?: string;
+  user?: User;
 }
 
 export interface AnimeRecommendation extends Anime {
   matchScore: number;
-  reasonForRecommendation: string;
+  reasonForRecommendation?: string;
+  isViewed: boolean;
 }
 
 export interface AnimeStats {
@@ -26,4 +34,14 @@ export interface AnimeStats {
   watchedCount: number;
   averageRating: number;
   topGenres: string[];
+  totalHoursWatched?: number;
+  recommendationAccuracy?: number;
+}
+
+export interface AnimeFilter {
+  genre?: string;
+  rating?: number;
+  status?: string;
+  sort?: 'popularity' | 'rating' | 'title' | 'releaseDate';
+  order?: 'asc' | 'desc';
 }
