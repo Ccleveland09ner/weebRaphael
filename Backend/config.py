@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     CACHE_TTL: int = 3600  # 1 hour
     CACHE_MAX_SIZE: int = 1000
     
+    # Site Configuration
+    SITE_URL: str = "http://localhost:8000"
+    ANIME_IMAGE_URL: str = "https://cdn.myanimelist.net/images/anime"
+    
     # Logging
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
