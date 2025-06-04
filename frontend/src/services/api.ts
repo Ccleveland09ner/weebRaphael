@@ -28,7 +28,10 @@ api.interceptors.response.use(
 export const auth = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
-      const { data } = await api.post<AuthResponse>('/auth/login', credentials);
+      const { data } = await api.post<AuthResponse>('/token', {
+        username: credentials.email,
+        password: credentials.password
+      });
       return data;
     } catch (error) {
       console.error('Login API error:', error);
@@ -38,7 +41,9 @@ export const auth = {
   
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
     const { data } = await api.post<AuthResponse>('/users', {
-      ...credentials,
+      name: credentials.name,
+      email: credentials.email,
+      password: credentials.password,
       age: parseInt(credentials.age.toString()),
       is_admin: credentials.is_admin
     });
