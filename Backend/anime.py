@@ -108,7 +108,7 @@ async def get_anime_data(genre: str, page: int = 1, per_page: int = 10) -> List[
     query = '''
     query ($genre: String, $page: Int, $perPage: Int) {
         Page(page: $page, perPage: $perPage) {
-            media(genre: $genre, type: ANIME) {
+            media(genre: $genre, type: ANIME, sort: SCORE_DESC) {
                 id
                 title {
                     romaji
@@ -119,6 +119,9 @@ async def get_anime_data(genre: str, page: int = 1, per_page: int = 10) -> List[
                     large
                     medium
                 }
+                averageScore
+                genres
+                popularity
             }
         }
     }
@@ -142,13 +145,12 @@ async def get_anime_data(genre: str, page: int = 1, per_page: int = 10) -> List[
         except aiohttp.ClientError as e:
             raise Exception(f"Network error while fetching anime data: {str(e)}")
             
-async def get_anime_recommendations(user_id: str, genre: str, page: int = 1, per_page: int = 10) -> List[Dict[str, Any]]:
+async def get_anime_recommendations(user_input: str, page: int = 1, per_page: int = 10) -> List[Dict[str, Any]]:
     """
-    Get anime recommendations based on user input and genre.
+    Get anime recommendations based on user input.
     
     Args:
-        user_id (str): User identifier
-        genre (str): Genre or description to search for
+        user_input (str): User's description or preferences
         page (int): Page number for pagination
         per_page (int): Number of items per page
         
@@ -156,15 +158,13 @@ async def get_anime_recommendations(user_id: str, genre: str, page: int = 1, per
         List[Dict[str, Any]]: List of anime recommendations
         
     Raises:
-        ValueError: If user_id or genre is invalid
+        ValueError: If user_input is invalid
     """
-    if not user_id or not user_id.strip():
-        raise ValueError("User ID cannot be empty")
-    if not genre or not genre.strip():
-        raise ValueError("Genre cannot be empty")
+    if not user_input or not user_input.strip():
+        raise ValueError("User input cannot be empty")
         
     try:
-        adjectives, nouns = extract_keywords(genre)
+        adjectives, nouns = extract_keywords(user_input)
         mapped_genres = map_to_genre(adjectives.union(nouns))
         anime_list = await get_anime_data(mapped_genres[0], page, per_page)
         
@@ -172,13 +172,16 @@ async def get_anime_recommendations(user_id: str, genre: str, page: int = 1, per
             recommendations = []
             for anime in anime_list:
                 recommendations.append({
-                    "id": anime["id"],
+                    "anime_id": anime["id"],
                     "title": anime["title"]["romaji"] or anime["title"]["english"],
                     "description": anime["description"],
-                    "cover_image": anime["coverImage"]["large"]
+                    "cover_image": anime["coverImage"]["large"],
+                    "rating": anime["averageScore"] / 10 if anime["averageScore"] else None,
+                    "genres": anime["genres"],
+                    "popularity": anime["popularity"]
                 })
             return recommendations
         else:
-            return [{"message": f"No recommendations found for genre: {genre}"}]
+            return [{"message": f"No recommendations found for: {user_input}"}]
     except Exception as e:
         return [{"error": f"Failed to get recommendations: {str(e)}"}]

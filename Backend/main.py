@@ -1,8 +1,8 @@
+import logging
 from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import List, Optional
-import logging
 from datetime import datetime
 
 from config import settings
@@ -18,6 +18,7 @@ from user_db import (
     reset_failed_login_attempts, init_db
 )
 from anime_db import AnimeDatabase
+from anime import get_anime_recommendations
 from auth import (
     get_current_user, create_access_token,
     create_refresh_token, verify_refresh_token,
@@ -261,12 +262,24 @@ async def get_watched_animes(current_user: UserResponse = Depends(get_current_us
         )
 
 @app.get("/anime/recommendations", response_model=List[AnimeRecommendation])
-async def get_anime_recommendations(
+async def get_recommendations(
+    query: str,
     current_user: UserResponse = Depends(get_current_user),
     limit: int = 10
 ):
     try:
-        return anime_db.get_user_recommendations(current_user.id, limit)
+        recommendations = await get_anime_recommendations(query, page=1, per_page=limit)
+        return [
+            AnimeRecommendation(
+                anime_id=rec["anime_id"],
+                title=rec["title"],
+                recommended_at=datetime.utcnow(),
+                is_viewed=False,
+                rating=rec.get("rating")
+            )
+            for rec in recommendations
+            if "anime_id" in rec
+        ]
     except Exception as e:
         logger.error(f"Get recommendations failed: {str(e)}")
         raise HTTPException(
@@ -284,12 +297,3 @@ async def get_anime_stats(current_user: UserResponse = Depends(get_current_user)
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get anime stats"
         )
-
-# Health check
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
-        "version": "1.0.0"
-    }
