@@ -6,7 +6,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
+  withCredentials: true
 });
 
 api.interceptors.request.use((config) => {
@@ -58,14 +59,13 @@ export const auth = {
   
   register: async (credentials: RegisterCredentials): Promise<void> => {
     try {
-      const { data } = await api.post('/users', {
+      await api.post('/users', {
         name: credentials.name,
         email: credentials.email,
         password: credentials.password,
-        age: 18, // Default age since it's required by the backend
+        age: 18,
         is_admin: false
       });
-      return data;
     } catch (error) {
       console.error('Registration API error:', error);
       throw error;
