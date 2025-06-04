@@ -1,8 +1,8 @@
-import logging
 from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import List, Optional
+import logging
 from datetime import datetime
 
 from config import settings
@@ -26,15 +26,11 @@ from auth import (
 )
 from rate_limiter import rate_limiter
 from cache import cache
-from exceptions import (
-    UserNotFoundError, DuplicateEntryError,
-    InvalidCredentialsError, RateLimitExceededError
-)
 
 # Configure logging
 logging.basicConfig(
-    level=settings.LOG_LEVEL,
-    format=settings.LOG_FORMAT
+    level=settings.DEBUG and logging.DEBUG or logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -58,7 +54,7 @@ app.add_middleware(
 )
 
 @app.on_event("startup")
-def startup():
+async def startup():
     init_db()
 
 # Rate limiting middleware
@@ -85,7 +81,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         user = get_user_by_email(form_data.username)
         if not user or not verify_password(form_data.password, user.password):
             increment_failed_login_attempts(user.id)
-            raise InvalidCredentialsError()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials"
+            )
         
         reset_failed_login_attempts(user.id)
         update_last_login(user.id)
@@ -111,7 +110,10 @@ async def refresh_token(refresh_token: str):
         payload = verify_refresh_token(refresh_token)
         user = get_user_by_email(payload["sub"])
         if not user:
-            raise InvalidCredentialsError()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials"
+            )
         
         access_token = create_access_token({"sub": user.email})
         new_refresh_token = create_refresh_token({"sub": user.email})
@@ -133,7 +135,8 @@ async def refresh_token(refresh_token: str):
 async def register_user(user: UserCreate):
     try:
         return create_user(user)
-    except DuplicateEntryError:
+    except Exception as e:
+        logger.error(f"User registration failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
@@ -150,7 +153,8 @@ async def update_user_info(
 ):
     try:
         return update_user(current_user.id, update_data)
-    except UserNotFoundError:
+    except Exception as e:
+        logger.error(f"User update failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
