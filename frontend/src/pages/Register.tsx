@@ -1,4 +1,4 @@
-import { Box, Container, Heading, VStack, FormControl, FormLabel, Input, Button, Text, Link, Flex, useColorModeValue } from '@chakra-ui/react';
+import { Box, Container, Heading, VStack, FormControl, FormLabel, Input, Button, Text, Link, Flex, useColorModeValue, NumberInput, NumberInputField } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { auth } from '../services/api';
@@ -7,6 +7,7 @@ export default function Register() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    age: 18,
     password: '',
     confirmPassword: ''
   });
@@ -21,6 +22,11 @@ export default function Register() {
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      return;
+    }
+
+    if (formData.age < 13) {
+      setError('You must be at least 13 years old to register');
       return;
     }
 
@@ -40,6 +46,13 @@ export default function Register() {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    });
+  };
+
+  const handleAgeChange = (value: string) => {
+    setFormData({
+      ...formData,
+      age: parseInt(value) || 18
     });
   };
 
@@ -163,6 +176,29 @@ export default function Register() {
                         bg: 'gray.100',
                       }}
                     />
+                  </FormControl>
+
+                  <FormControl isRequired>
+                    <FormLabel>Age</FormLabel>
+                    <NumberInput
+                      min={13}
+                      max={120}
+                      value={formData.age}
+                      onChange={handleAgeChange}
+                    >
+                      <NumberInputField
+                        bg="gray.50"
+                        border="2px solid"
+                        borderColor="transparent"
+                        _focus={{
+                          bg: 'white',
+                          borderColor: 'brand.500',
+                        }}
+                        _hover={{
+                          bg: 'gray.100',
+                        }}
+                      />
+                    </NumberInput>
                   </FormControl>
 
                   <FormControl isRequired>

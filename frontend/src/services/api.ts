@@ -63,7 +63,7 @@ export const auth = {
         name: credentials.name,
         email: credentials.email,
         password: credentials.password,
-        age: 18,
+        age: credentials.age,
         is_admin: false
       };
 
