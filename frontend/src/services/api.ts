@@ -4,6 +4,9 @@ import { Anime, FavoriteAnime, WatchedAnime, AnimeRecommendation, AnimeStats, An
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  }
 });
 
 api.interceptors.request.use((config) => {
@@ -28,7 +31,15 @@ api.interceptors.response.use(
 export const auth = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
-      const { data } = await api.post<AuthResponse>('/auth/login', credentials);
+      const formData = new URLSearchParams();
+      formData.append('username', credentials.email);
+      formData.append('password', credentials.password);
+
+      const { data } = await api.post<AuthResponse>('/token', formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
       return data;
     } catch (error) {
       console.error('Login API error:', error);
@@ -37,8 +48,18 @@ export const auth = {
   },
   
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
-    const { data } = await api.post<AuthResponse>('/auth/register', credentials);
-    return data;
+    try {
+      const { data } = await api.post<AuthResponse>('/users', {
+        name: credentials.name,
+        email: credentials.email,
+        password: credentials.password,
+        age: 18 // Adding a default age since it's required by the backend
+      });
+      return data;
+    } catch (error) {
+      console.error('Registration API error:', error);
+      throw error;
+    }
   },
   
   logout: () => {
@@ -47,7 +68,7 @@ export const auth = {
   
   getProfile: async (): Promise<User> => {
     try {
-      const { data } = await api.get<User>('/auth/profile');
+      const { data } = await api.get<User>('/users/me');
       return data;
     } catch (error) {
       console.error('Get profile API error:', error);
@@ -56,12 +77,12 @@ export const auth = {
   },
   
   updateProfile: async (updates: Partial<RegisterCredentials>): Promise<User> => {
-    const { data } = await api.put<User>('/auth/profile', updates);
+    const { data } = await api.put<User>('/users/me', updates);
     return data;
   },
 
   refreshToken: async (): Promise<AuthResponse> => {
-    const { data } = await api.post<AuthResponse>('/auth/refresh');
+    const { data } = await api.post<AuthResponse>('/refresh');
     return data;
   }
 };
