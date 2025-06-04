@@ -29,7 +29,8 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = [
         "http://localhost:5173",  # Vite dev server
         "http://localhost:3000",  # React dev server
-        "https://*.netlify.app",  # Netlify domains
+        "http://localhost:8000",  # Backend dev server
+        "https://*.netlify.app"   # Netlify domains
     ]
     CORS_METHODS: List[str] = ["*"]
     CORS_HEADERS: List[str] = ["*"]
@@ -49,10 +50,10 @@ class Settings(BaseSettings):
     CACHE_TTL: int = 3600  # 1 hour
     CACHE_MAX_SIZE: int = 1000
     
-    # Site Configuration
+    # API URLs
     SITE_URL: str = os.getenv("SITE_URL", "http://localhost:8000")
-    ANIME_IMAGE_URL: str = os.getenv("ANIME_IMAGE_URL", "https://cdn.myanimelist.net/images/anime")
     ANIME_API_URL: str = os.getenv("ANIME_API_URL", "https://graphql.anilist.co")
+    ANIME_IMAGE_URL: str = os.getenv("ANIME_IMAGE_URL", "https://cdn.myanimelist.net/images/anime")
     
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
