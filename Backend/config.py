@@ -49,9 +49,11 @@ class Settings(BaseSettings):
     SITE_URL: str = "http://localhost:8000"
     ANIME_API_URL: str = "https://graphql.anilist.co"
     ANIME_IMAGE_URL: str = "https://cdn.myanimelist.net/images/anime"
+    ANILIST_API_URL: str = "https://graphql.anilist.co"
     
     class Config:
         env_file = ".env"
+        extra = "allow"  # Allow extra fields
 
 settings = Settings()
 
