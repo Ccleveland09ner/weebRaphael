@@ -1,4 +1,4 @@
-import { Box, Container, Heading, VStack, FormControl, FormLabel, Input, Button, Text, Link, Flex, useColorModeValue, NumberInput, NumberInputField } from '@chakra-ui/react';
+import { Box, Container, Heading, VStack, FormControl, FormLabel, Input, Button, Text, Link, Flex, useColorModeValue } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { auth } from '../services/api';
@@ -20,13 +20,34 @@ export default function Register() {
     e.preventDefault();
     setError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    if (!formData.name.trim()) {
+      setError('Name is required');
       return;
     }
 
-    if (!formData.age || parseInt(formData.age) < 13) {
-      setError('You must be at least 13 years old to register');
+    if (!formData.email.trim()) {
+      setError('Email is required');
+      return;
+    }
+
+    if (!formData.age) {
+      setError('Age is required');
+      return;
+    }
+
+    const age = parseInt(formData.age);
+    if (isNaN(age) || age < 13 || age > 120) {
+      setError('Please enter a valid age between 13 and 120');
+      return;
+    }
+
+    if (!formData.password) {
+      setError('Password is required');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
 
@@ -46,10 +67,22 @@ export default function Register() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    
+    if (name === 'age') {
+      // Only allow numbers
+      if (value === '' || /^\d+$/.test(value)) {
+        setFormData(prev => ({
+          ...prev,
+          [name]: value
+        }));
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   return (
@@ -141,6 +174,7 @@ export default function Register() {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
+                      placeholder="Enter your name"
                       bg="gray.50"
                       border="2px solid"
                       borderColor="transparent"
@@ -161,6 +195,7 @@ export default function Register() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
+                      placeholder="Enter your email"
                       bg="gray.50"
                       border="2px solid"
                       borderColor="transparent"
@@ -181,6 +216,7 @@ export default function Register() {
                       name="age"
                       value={formData.age}
                       onChange={handleChange}
+                      placeholder="Enter your age"
                       min="13"
                       max="120"
                       bg="gray.50"
@@ -203,6 +239,7 @@ export default function Register() {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
+                      placeholder="Create a password"
                       bg="gray.50"
                       border="2px solid"
                       borderColor="transparent"
@@ -223,6 +260,7 @@ export default function Register() {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
+                      placeholder="Confirm your password"
                       bg="gray.50"
                       border="2px solid"
                       borderColor="transparent"

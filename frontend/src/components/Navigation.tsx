@@ -3,7 +3,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
 export default function Navigation() {
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, isAdmin, logout } = useAuthStore();
   const location = useLocation();
 
   // Don't show navigation on login/register pages
@@ -32,15 +32,31 @@ export default function Navigation() {
                 <Avatar size="sm" name={user?.name} bg="brand.500" />
               </MenuButton>
               <MenuList shadow="lg" border="none" overflow="hidden">
-                <MenuItem as={RouterLink} to="/recommendations" _hover={{ bg: 'gray.50' }}>
-                  Recommendations
-                </MenuItem>
-                <MenuItem as={RouterLink} to="/favorites" _hover={{ bg: 'gray.50' }}>
-                  Favorites
-                </MenuItem>
-                <MenuItem as={RouterLink} to="/watched" _hover={{ bg: 'gray.50' }}>
-                  Watched
-                </MenuItem>
+                {!isAdmin && (
+                  <>
+                    <MenuItem as={RouterLink} to="/recommendations" _hover={{ bg: 'gray.50' }}>
+                      Recommendations
+                    </MenuItem>
+                    <MenuItem as={RouterLink} to="/favorites" _hover={{ bg: 'gray.50' }}>
+                      Favorites
+                    </MenuItem>
+                    <MenuItem as={RouterLink} to="/watched" _hover={{ bg: 'gray.50' }}>
+                      Watched
+                    </MenuItem>
+                  </>
+                )}
+                
+                {isAdmin && (
+                  <>
+                    <MenuItem as={RouterLink} to="/admin/users" _hover={{ bg: 'gray.50' }}>
+                      Manage Users
+                    </MenuItem>
+                    <MenuItem as={RouterLink} to="/admin/stats" _hover={{ bg: 'gray.50' }}>
+                      System Stats
+                    </MenuItem>
+                  </>
+                )}
+                
                 <MenuItem as={RouterLink} to="/profile" _hover={{ bg: 'gray.50' }}>
                   Profile
                 </MenuItem>

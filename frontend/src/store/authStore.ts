@@ -5,6 +5,7 @@ import { auth } from '../services/api';
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   setUser: (user: User | null) => void;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -14,15 +15,24 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
+  isAdmin: false,
   
-  setUser: (user) => set({ user, isAuthenticated: !!user }),
+  setUser: (user) => set({ 
+    user, 
+    isAuthenticated: !!user,
+    isAdmin: user?.is_admin || false
+  }),
   
   login: async (email, password) => {
     try {
       const response = await auth.login({ email, password });
       if (response?.token && response?.user) {
         localStorage.setItem('token', response.token);
-        set({ user: response.user, isAuthenticated: true });
+        set({ 
+          user: response.user, 
+          isAuthenticated: true,
+          isAdmin: response.user.is_admin
+        });
       } else {
         throw new Error('Invalid response format');
       }
@@ -35,7 +45,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     auth.logout();
     localStorage.removeItem('token');
-    set({ user: null, isAuthenticated: false });
+    set({ user: null, isAuthenticated: false, isAdmin: false });
   },
   
   initialize: async () => {
@@ -44,7 +54,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (token) {
         const user = await auth.getProfile();
         if (user) {
-          set({ user, isAuthenticated: true });
+          set({ 
+            user, 
+            isAuthenticated: true,
+            isAdmin: user.is_admin
+          });
         } else {
           throw new Error('No user data received');
         }
@@ -52,7 +66,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error) {
       console.error('Initialization error:', error);
       localStorage.removeItem('token');
-      set({ user: null, isAuthenticated: false });
+      set({ user: null, isAuthenticated: false, isAdmin: false });
     }
   }
 }));
