@@ -1,4 +1,4 @@
-import { Box, Container, Heading, VStack, FormControl, FormLabel, Input, Button, Text, Link, Flex, Image } from '@chakra-ui/react';
+import { Box, Container, Heading, VStack, FormControl, FormLabel, Input, Button, Text, Link, Flex, Image, useColorModeValue } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
@@ -28,7 +28,7 @@ export default function Login() {
   };
 
   return (
-    <Flex minH="100vh" bg="gray.50">
+    <Flex minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')}>
       {/* Left side - Information */}
       <Box
         display={{ base: 'none', lg: 'flex' }}
@@ -38,33 +38,47 @@ export default function Login() {
         p={12}
         flexDirection="column"
         justifyContent="center"
+        position="relative"
+        overflow="hidden"
       >
-        <Heading size="2xl" mb={6}>
-          Welcome to WeebRaphael
-        </Heading>
-        <Text fontSize="xl" mb={8}>
-          Your Personal Anime Discovery Platform
-        </Text>
-        <VStack spacing={6} align="flex-start">
-          <Feature
-            title="Smart Recommendations"
-            description="Get personalized anime suggestions based on your preferences and viewing history"
-          />
-          <Feature
-            title="Track Your Journey"
-            description="Keep track of your watched anime and maintain your favorites list"
-          />
-          <Feature
-            title="Community Insights"
-            description="Discover what other anime enthusiasts are watching and loving"
-          />
-        </VStack>
-        <Image
-          src="https://images.pexels.com/photos/2832432/pexels-photo-2832432.jpeg"
-          alt="Anime Illustration"
-          mt={12}
-          rounded="xl"
-          opacity={0.9}
+        <Box position="relative" zIndex="1">
+          <Heading size="2xl" mb={6}>
+            Welcome to WeebRaphael
+          </Heading>
+          <Text fontSize="xl" mb={8} opacity={0.9}>
+            Your Personal Anime Discovery Platform
+          </Text>
+          
+          <VStack spacing={8} align="flex-start">
+            <Feature
+              title="Smart Recommendations"
+              description="Get personalized anime suggestions based on your preferences and viewing history"
+            />
+            <Feature
+              title="Track Your Journey"
+              description="Keep track of your watched anime and maintain your favorites list"
+            />
+            <Feature
+              title="Community Insights"
+              description="Discover what other anime enthusiasts are watching and loving"
+            />
+            <Feature
+              title="Personalized Experience"
+              description="Rate, review, and get recommendations tailored just for you"
+            />
+          </VStack>
+        </Box>
+
+        {/* Background pattern */}
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bgGradient="linear(to-br, brand.400, brand.600)"
+          opacity="0.8"
+          zIndex="0"
         />
       </Box>
 
@@ -80,7 +94,15 @@ export default function Login() {
             </VStack>
 
             {error && (
-              <Text color="red.500" w="full" textAlign="center" bg="red.50" p={2} rounded="md">
+              <Text
+                color="red.500"
+                w="full"
+                textAlign="center"
+                bg="red.50"
+                p={3}
+                rounded="md"
+                fontSize="sm"
+              >
                 {error}
               </Text>
             )}
@@ -94,8 +116,15 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     bg="gray.50"
-                    border="none"
-                    _focus={{ bg: 'white', ring: 2, ringColor: 'brand.500' }}
+                    border="2px solid"
+                    borderColor="transparent"
+                    _focus={{
+                      bg: 'white',
+                      borderColor: 'brand.500',
+                    }}
+                    _hover={{
+                      bg: 'gray.100',
+                    }}
                   />
                 </FormControl>
 
@@ -106,8 +135,15 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     bg="gray.50"
-                    border="none"
-                    _focus={{ bg: 'white', ring: 2, ringColor: 'brand.500' }}
+                    border="2px solid"
+                    borderColor="transparent"
+                    _focus={{
+                      bg: 'white',
+                      borderColor: 'brand.500',
+                    }}
+                    _hover={{
+                      bg: 'gray.100',
+                    }}
                   />
                 </FormControl>
 
@@ -117,7 +153,13 @@ export default function Login() {
                   size="lg"
                   width="full"
                   isLoading={isLoading}
-                  _hover={{ transform: 'translateY(-1px)', shadow: 'lg' }}
+                  _hover={{
+                    transform: 'translateY(-2px)',
+                    boxShadow: 'lg',
+                  }}
+                  _active={{
+                    transform: 'translateY(0)',
+                  }}
                 >
                   Sign In
                 </Button>
@@ -126,7 +168,16 @@ export default function Login() {
 
             <Text>
               Don't have an account?{' '}
-              <Link as={RouterLink} to="/register" color="brand.500" fontWeight="semibold">
+              <Link
+                as={RouterLink}
+                to="/register"
+                color="brand.500"
+                fontWeight="semibold"
+                _hover={{
+                  textDecoration: 'none',
+                  color: 'brand.600',
+                }}
+              >
                 Sign Up
               </Link>
             </Text>
@@ -140,10 +191,10 @@ export default function Login() {
 function Feature({ title, description }: { title: string; description: string }) {
   return (
     <Box>
-      <Text fontSize="lg" fontWeight="bold" mb={1}>
+      <Text fontSize="lg" fontWeight="bold" mb={2}>
         {title}
       </Text>
-      <Text opacity={0.9}>
+      <Text fontSize="md" opacity={0.9}>
         {description}
       </Text>
     </Box>
