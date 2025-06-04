@@ -1,19 +1,14 @@
 import spacy
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-import os
 import aiohttp
-from dotenv import load_dotenv
 from typing import List, Dict, Any, Tuple, Set
 from aiohttp import ClientTimeout
-
-load_dotenv()
-
-anime_api_url = os.getenv("ANIME_API_URL")
-if not anime_api_url:
-    raise ValueError("ANIME_API_URL environment variable is not set")
+from config import settings
 
 nlp = spacy.load("en_core_web_sm")
+
+anime_api_url = settings.ANIME_API_URL
 
 genre_map = {
     "action": ["fast-paced", "battle", "combat", "war", "hero", "explosions", "fight"],
