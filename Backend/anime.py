@@ -6,7 +6,12 @@ from typing import List, Dict, Any, Tuple, Set
 from aiohttp import ClientTimeout
 from config import settings
 
-nlp = spacy.load("en_core_web_sm")
+# Initialize spaCy with a simpler model
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    # Fallback to blank English model if spaCy model is not available
+    nlp = spacy.blank("en")
 
 anime_api_url = settings.ANIME_API_URL
 
@@ -83,7 +88,7 @@ def map_to_genre(keywords: Set[str], threshold: float = 0.5) -> List[str]:
             matched_genres.append((genre, score))
     matched_genres.sort(key=lambda x: x[1], reverse=True)
 
-    return [genre for genre, _ in matched_genres] if matched_genres else ["miscellaneous"]
+    return [genre for genre, _ in matched_genres] if matched_genres else ["action"]
 
 async def get_anime_data(genre: str, page: int = 1, per_page: int = 10) -> List[Dict[str, Any]]:
     """

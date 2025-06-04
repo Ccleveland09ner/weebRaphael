@@ -23,6 +23,8 @@ services:
         value: false
       - key: SITE_URL
         value: https://weebraphael-backend.onrender.com
+      - key: ANIME_API_URL
+        value: https://graphql.anilist.co
       - key: ANIME_IMAGE_URL
         value: https://cdn.myanimelist.net/images/anime
       - key: DATABASE_URL
