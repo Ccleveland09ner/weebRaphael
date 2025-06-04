@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: weebraphael-backend
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python -m alembic upgrade head
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.7
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: 7
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: false
+      - key: SITE_URL
+        value: https://weebraphael-backend.onrender.com
+      - key: ANIME_IMAGE_URL
+        value: https://cdn.myanimelist.net/images/anime
+      - key: DATABASE_URL
+        fromDatabase:
+          name: weebraphael-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: weebraphael-redis
+          property: connectionString
