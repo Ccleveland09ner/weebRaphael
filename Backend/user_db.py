@@ -20,7 +20,6 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Create users table with additional fields
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +36,6 @@ def init_db():
         )
     ''')
     
-    # Create indexes for better performance
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_users_name ON users(name)')
     
