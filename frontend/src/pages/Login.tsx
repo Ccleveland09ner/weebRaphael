@@ -1,4 +1,4 @@
-import { Box, Container, Heading, VStack, FormControl, FormLabel, Input, Button, Text, Link, Flex, Image, useColorModeValue } from '@chakra-ui/react';
+import { Box, Container, Heading, VStack, FormControl, FormLabel, Input, Button, Text, Link, Flex, useColorModeValue } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
@@ -69,7 +69,7 @@ export default function Login() {
           </VStack>
         </Box>
 
-        {/* Background pattern */}
+        {/* Background gradient */}
         <Box
           position="absolute"
           top="0"
@@ -85,103 +85,105 @@ export default function Login() {
       {/* Right side - Login Form */}
       <Box flex="1" p={8} display="flex" alignItems="center">
         <Container maxW="md">
-          <VStack spacing={8} bg="white" p={8} borderRadius="xl" shadow="xl">
-            <VStack spacing={2} textAlign="center" w="full">
-              <Heading color="brand.500">Sign In</Heading>
-              <Text color="gray.600">
-                Welcome back! Please login to your account
-              </Text>
-            </VStack>
+          <Box bg="white" p={8} borderRadius="xl" shadow="xl" w="full">
+            <VStack spacing={8}>
+              <VStack spacing={2} textAlign="center" w="full">
+                <Heading color="brand.500">Sign In</Heading>
+                <Text color="gray.600">
+                  Welcome back! Please login to your account
+                </Text>
+              </VStack>
 
-            {error && (
-              <Text
-                color="red.500"
-                w="full"
-                textAlign="center"
-                bg="red.50"
-                p={3}
-                rounded="md"
-                fontSize="sm"
-              >
-                {error}
-              </Text>
-            )}
+              {error && (
+                <Text
+                  color="red.500"
+                  w="full"
+                  textAlign="center"
+                  bg="red.50"
+                  p={3}
+                  rounded="md"
+                  fontSize="sm"
+                >
+                  {error}
+                </Text>
+              )}
 
-            <Box as="form" onSubmit={handleSubmit} w="full">
-              <VStack spacing={4}>
-                <FormControl>
-                  <FormLabel>Email</FormLabel>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    bg="gray.50"
-                    border="2px solid"
-                    borderColor="transparent"
-                    _focus={{
-                      bg: 'white',
-                      borderColor: 'brand.500',
-                    }}
+              <Box as="form" onSubmit={handleSubmit} w="full">
+                <VStack spacing={4}>
+                  <FormControl>
+                    <FormLabel>Email</FormLabel>
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      bg="gray.50"
+                      border="2px solid"
+                      borderColor="transparent"
+                      _focus={{
+                        bg: 'white',
+                        borderColor: 'brand.500',
+                      }}
+                      _hover={{
+                        bg: 'gray.100',
+                      }}
+                    />
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Password</FormLabel>
+                    <Input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      bg="gray.50"
+                      border="2px solid"
+                      borderColor="transparent"
+                      _focus={{
+                        bg: 'white',
+                        borderColor: 'brand.500',
+                      }}
+                      _hover={{
+                        bg: 'gray.100',
+                      }}
+                    />
+                  </FormControl>
+
+                  <Button
+                    type="submit"
+                    colorScheme="brand"
+                    size="lg"
+                    width="full"
+                    isLoading={isLoading}
                     _hover={{
-                      bg: 'gray.100',
+                      transform: 'translateY(-2px)',
+                      boxShadow: 'lg',
                     }}
-                  />
-                </FormControl>
+                    _active={{
+                      transform: 'translateY(0)',
+                    }}
+                  >
+                    Sign In
+                  </Button>
+                </VStack>
+              </Box>
 
-                <FormControl>
-                  <FormLabel>Password</FormLabel>
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    bg="gray.50"
-                    border="2px solid"
-                    borderColor="transparent"
-                    _focus={{
-                      bg: 'white',
-                      borderColor: 'brand.500',
-                    }}
-                    _hover={{
-                      bg: 'gray.100',
-                    }}
-                  />
-                </FormControl>
-
-                <Button
-                  type="submit"
-                  colorScheme="brand"
-                  size="lg"
-                  width="full"
-                  isLoading={isLoading}
+              <Text>
+                Don't have an account?{' '}
+                <Link
+                  as={RouterLink}
+                  to="/register"
+                  color="brand.500"
+                  fontWeight="semibold"
                   _hover={{
-                    transform: 'translateY(-2px)',
-                    boxShadow: 'lg',
-                  }}
-                  _active={{
-                    transform: 'translateY(0)',
+                    textDecoration: 'none',
+                    color: 'brand.600',
                   }}
                 >
-                  Sign In
-                </Button>
-              </VStack>
-            </Box>
-
-            <Text>
-              Don't have an account?{' '}
-              <Link
-                as={RouterLink}
-                to="/register"
-                color="brand.500"
-                fontWeight="semibold"
-                _hover={{
-                  textDecoration: 'none',
-                  color: 'brand.600',
-                }}
-              >
-                Sign Up
-              </Link>
-            </Text>
-          </VStack>
+                  Sign Up
+                </Link>
+              </Text>
+            </VStack>
+          </Box>
         </Container>
       </Box>
     </Flex>
