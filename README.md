@@ -45,7 +45,7 @@ REFRESH_TOKEN_EXPIRE_DAYS=7
 4. Run the backend:
 
 ```bash
-uvicorn main:app --reload
+python -m uvicorn main:app --reload
 ```
 
 ## Frontend Setup
