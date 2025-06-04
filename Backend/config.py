@@ -2,26 +2,38 @@ from pydantic_settings import BaseSettings
 from typing import Optional, List
 import secrets
 import logging
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = "development"
-    DEBUG: bool = True
+    DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     
     # Security
-    SECRET_KEY: str = secrets.token_urlsafe(32)
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    SECRET_KEY: str = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
+    ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+    REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
     API_KEY_ROTATION_DAYS: int = 30
     
     # Database
-    DATABASE_URL: str = "sqlite:///./anime.db"
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./anime.db")
     DB_POOL_SIZE: int = 5
     DB_MAX_OVERFLOW: int = 10
     
+    # Redis Configuration
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")
+    
     # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:5173",  # Vite dev server
+        "http://localhost:3000",  # React dev server
+        "https://*.netlify.app",  # Netlify domains
+        "https://weebraphael.netlify.app",  # Your specific Netlify domain
+    ]
     CORS_METHODS: List[str] = ["*"]
     CORS_HEADERS: List[str] = ["*"]
     
@@ -41,11 +53,11 @@ class Settings(BaseSettings):
     CACHE_MAX_SIZE: int = 1000
     
     # Site Configuration
-    SITE_URL: str = "http://localhost:8000"
-    ANIME_IMAGE_URL: str = "https://cdn.myanimelist.net/images/anime"
+    SITE_URL: str = os.getenv("SITE_URL", "http://localhost:8000")
+    ANIME_IMAGE_URL: str = os.getenv("ANIME_IMAGE_URL", "https://cdn.myanimelist.net/images/anime")
     
     # Logging
-    LOG_LEVEL: str = "INFO"
+    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     LOG_FORMAT: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     
     class Config:
